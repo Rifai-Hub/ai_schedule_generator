@@ -86,7 +86,6 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(title: const Text("AI Schedule Generator")),
       body: Column(
         children: [
-          // FORM INPUT TUGAS
           Card(
             margin: const EdgeInsets.all(16),
             child: Padding(
@@ -104,7 +103,6 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(height: 10),
                   Row(
                     children: [
-                      // Input durasi
                       Expanded(
                         child: TextField(
                           controller: durationController,
@@ -117,7 +115,6 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                       const SizedBox(width: 10),
-                      // Dropdown prioritas
                       Expanded(
                         child: DropdownButtonFormField<String>(
                           value: priority,
@@ -140,7 +137,6 @@ class _HomeScreenState extends State<HomeScreen> {
                     ],
                   ),
                   const SizedBox(height: 20),
-                  // Tombol tambah tugas
                   SizedBox(
                     height: 50,
                     width: double.infinity,
@@ -154,7 +150,6 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
           ),
-          // LIST TUGAS
           Expanded(
             child: tasks.isEmpty
                 ? const Center(
@@ -209,7 +204,6 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ],
       ),
-      // FAB GENERATE AI
       floatingActionButton: FloatingActionButton.extended(
         onPressed: isLoading ? null : _generateSchedule,
         icon: isLoading

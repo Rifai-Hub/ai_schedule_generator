@@ -2,9 +2,9 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class GeminiService {
-  static const String apiKey = "AIzaSyDoeaBkOPyf7fu1t8cnpWkZ1hiza_mgtEQ";
+  static const String apiKey = "AIzaSyBSJ4EZTRBgQqAfM4SYSuqz4E44oo4Fyog";
 
-  static const String model = "gemini-flash-latest";
+  static const String model = "gemini-1.5-flash";
 
   static const String baseUrl =
       "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-latest:generateContent";
@@ -24,7 +24,6 @@ class GeminiService {
             ],
           },
         ],
-
         "generationConfig": {
           "temperature": 0.7,
           "topK": 40,
@@ -55,13 +54,13 @@ class GeminiService {
       } else {
         print("API Error - Status: ${response.statusCode}, Body: ${response.body}");
         if (response.statusCode == 429) {
-          throw Exception("Rate limit tercapai (429). Tunggu beberapa menit atau upgrade quota.");
+          throw Exception("Rate limit tercapai (429). Tunggu beberapa menit.");
         }
         if (response.statusCode == 401) {
-          throw Exception("API key tidak valid (401). Periksa key Anda.");
+          throw Exception("API key tidak valid (401). Periksa kembali key Anda.");
         }
-        if (response.statusCode == 400) {
-          throw Exception("Request salah format (400). Periksa struktur data tugas.");
+        if (response.statusCode == 403) {
+          throw Exception("Akses ditolak (403). Pastikan API Gemini sudah aktif di Google Cloud.");
         }
         throw Exception("Gagal memanggil Gemini API (Code: ${response.statusCode})");
       }
@@ -71,7 +70,7 @@ class GeminiService {
     }
   }
 
-  static String _buildPrompt(List<Map<String, dynamic>> tasks) {
+static String _buildPrompt(List<Map<String, dynamic>> tasks) {
     String taskDescription = tasks.map((task) => 
       "- ${task['name']} (${task['duration']} menit, Prioritas: ${task['priority']})"
     ).join('\n');
@@ -80,9 +79,13 @@ class GeminiService {
 Buatkan jadwal harian yang efisien berdasarkan daftar tugas berikut:
 $taskDescription
 
-Berikan jadwal dalam format Markdown yang rapi, mulai dari jam 08:00 pagi.
-Gunakan tabel jika memungkinkan untuk jadwalnya.
-Tambahkan tips produktivitas di bagian akhir.
+INSTRUKSI FORMAT KHUSUS:
+1. Berikan jadwal dalam format Markdown, mulai dari jam 08:00 pagi.
+2. Gunakan tabel dengan 3 KOLOM UTAMA agar tetap rapi: | Waktu | Kegiatan & Prioritas | Keterangan |.
+3. Di kolom 'Kegiatan & Prioritas', gabungkan nama tugas dan level prioritasnya (contoh: "Makan (Tinggi)").
+4. Kolom 'Keterangan' harus berisi penjelasan singkat atau tips pelaksanaan tugas tersebut.
+5. Gunakan bahasa Indonesia yang santai.
+6. Tambahkan tips produktivitas tambahan di bagian paling bawah setelah tabel.
 """;
   }
 }
