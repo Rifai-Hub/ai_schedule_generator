@@ -13,6 +13,7 @@ class ScheduleResultScreen extends StatefulWidget {
 }
 
 class _ScheduleResultScreenState extends State<ScheduleResultScreen> {
+  // --- LOGIKA ASLI TETAP DIPERTAHANKAN ---
   bool _isLoading = false;
 
   List<Map<String, String>> _parseSchedule(String markdown) {
@@ -57,7 +58,7 @@ class _ScheduleResultScreenState extends State<ScheduleResultScreen> {
     } catch (e) {
       _showErrorDialog("Gagal mengekspor: ${e.toString()}");
     } finally {
-      setState(() => _isLoading = false);
+      if (mounted) setState(() => _isLoading = false);
     }
   }
 
@@ -65,80 +66,114 @@ class _ScheduleResultScreenState extends State<ScheduleResultScreen> {
     showDialog(
       context: context,
       builder: (ctx) => AlertDialog(
-        title: const Text("Pemberitahuan"),
-        content: Text(message),
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        title: const Text("Pemberitahuan", style: TextStyle(fontFamily: 'SF Pro', fontWeight: FontWeight.bold)),
+        content: Text(message, style: const TextStyle(fontFamily: 'SF Pro')),
         actions: [
-          TextButton(onPressed: () => Navigator.pop(ctx), child: const Text("OK"))
+          TextButton(
+            onPressed: () => Navigator.pop(ctx), 
+            child: const Text("OK", style: TextStyle(color: Color(0xFFA855F7), fontWeight: FontWeight.bold))
+          )
         ],
       ),
     );
   }
+  // --- END OF LOGIKA ASLI ---
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: Colors.grey[50],
+      backgroundColor: const Color(0xFFF8FAFC), // background-light
       appBar: AppBar(
-        title: const Text("Hasil Jadwal Optimal"),
+        elevation: 0,
+        backgroundColor: Colors.transparent,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back_ios_new_rounded, color: Color(0xFF0F172A), size: 20),
+          onPressed: () => Navigator.pop(context),
+        ),
+        centerTitle: false,
+        title: const Text(
+          "Hasil Jadwal",
+          style: TextStyle(
+            color: Color(0xFF0F172A),
+            fontWeight: FontWeight.w700,
+            fontSize: 22,
+            fontFamily: 'SF Pro',
+          ),
+        ),
         actions: [
           IconButton(
-            icon: const Icon(Icons.copy),
+            icon: const Icon(Icons.content_copy_rounded, color: Color(0xFFA855F7), size: 22),
             onPressed: () {
               Clipboard.setData(ClipboardData(text: widget.scheduleResult));
               ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Jadwal berhasil disalin!")),
+                const SnackBar(
+                  content: Text("Jadwal berhasil disalin!", style: TextStyle(fontFamily: 'SF Pro')),
+                  behavior: SnackBarBehavior.floating,
+                  backgroundColor: Color(0xFF0F172A),
+                ),
               );
             },
           ),
-          IconButton(
-            icon: const Icon(Icons.event_available),
-            onPressed: _isLoading ? null : _exportToGoogleCalendar,
-          ),
+          const SizedBox(width: 8),
         ],
       ),
       body: SafeArea(
         child: Padding(
-          padding: const EdgeInsets.all(16.0),
+          padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Column(
             children: [
+              const SizedBox(height: 10),
               _buildInfoBanner(),
-              const SizedBox(height: 15),
+              const SizedBox(height: 20),
+              
+              // Kartu Markdown (Glass Style)
               Expanded(
                 child: Container(
-                  decoration: _boxDecoration(),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(32),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.04),
+                        blurRadius: 24,
+                        offset: const Offset(0, 8),
+                      )
+                    ],
+                  ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(32),
                     child: Markdown(
                       data: widget.scheduleResult,
                       selectable: true,
-                      padding: const EdgeInsets.all(15),
+                      padding: const EdgeInsets.all(24),
                       styleSheet: MarkdownStyleSheet(
-                        tableCellsPadding: const EdgeInsets.all(8),
-                        tableBorder: TableBorder.all(color: Colors.grey.shade200, width: 1),
-                        tableBody: const TextStyle(fontSize: 12, height: 1.4),
-                        tableHead: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
+                        p: const TextStyle(fontFamily: 'SF Pro', fontSize: 15, color: Color(0xFF334155), height: 1.5),
+                        h1: const TextStyle(fontFamily: 'SF Pro', fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        h2: const TextStyle(fontFamily: 'SF Pro', fontWeight: FontWeight.bold, color: Color(0xFF0F172A)),
+                        listBullet: const TextStyle(color: Color(0xFFA855F7)),
+                        tableCellsPadding: const EdgeInsets.all(12),
+                        tableBorder: TableBorder.all(color: const Color(0xFFF1F5F9), width: 1),
+                        tableBody: const TextStyle(fontFamily: 'SF Pro', fontSize: 13, height: 1.4, color: Color(0xFF475569)),
+                        tableHead: const TextStyle(fontFamily: 'SF Pro', fontWeight: FontWeight.bold, fontSize: 13, color: Color(0xFF0F172A)),
                         tableColumnWidth: const FlexColumnWidth(), 
                       ),
                     ),
                   ),
                 ),
               ),
-              const SizedBox(height: 15),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton.icon(
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.indigo,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 15),
-                  ),
-                  onPressed: _isLoading ? null : _exportToGoogleCalendar,
-                  icon: _isLoading 
-                      ? const SizedBox(width: 20, height: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
-                      : const Icon(Icons.calendar_month),
-                  label: Text(_isLoading ? "Memproses..." : "Ekspor ke Google Calendar"),
-                ),
+              
+              const SizedBox(height: 24),
+              
+              // Tombol Ekspor (Gradient Style)
+              _buildGradientButton(
+                onTap: _isLoading ? null : _exportToGoogleCalendar,
+                text: "Ekspor ke Google Calendar",
+                icon: Icons.calendar_today_rounded,
+                isLoading: _isLoading,
               ),
+              
+              const SizedBox(height: 30),
             ],
           ),
         ),
@@ -146,28 +181,84 @@ class _ScheduleResultScreenState extends State<ScheduleResultScreen> {
     );
   }
 
-  BoxDecoration _boxDecoration() {
-    return BoxDecoration(
-      color: Colors.white,
-      borderRadius: BorderRadius.circular(12),
-      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10)],
-    );
-  }
-
   Widget _buildInfoBanner() {
     return Container(
-      padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.indigo.shade50,
-        borderRadius: BorderRadius.circular(8),
-        border: Border.all(color: Colors.indigo.shade100),
+        color: const Color(0xFFA855F7).withOpacity(0.08),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: const Color(0xFFA855F7).withOpacity(0.1)),
       ),
       child: const Row(
         children: [
-          Icon(Icons.auto_awesome, color: Colors.indigo),
-          SizedBox(width: 10),
-          Expanded(child: Text("Jadwal ini disusun otomatis oleh AI.", style: TextStyle(color: Colors.indigo, fontSize: 13))),
+          Icon(Icons.auto_awesome_rounded, color: Color(0xFFA855F7), size: 20),
+          SizedBox(width: 12),
+          Expanded(
+            child: Text(
+              "Jadwal ini disusun otomatis oleh AI untuk produktivitas maksimal kamu.",
+              style: TextStyle(
+                color: Color(0xFF7E22CE), 
+                fontSize: 13, 
+                fontFamily: 'SF Pro',
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildGradientButton({
+    required VoidCallback? onTap,
+    required String text,
+    required IconData icon,
+    bool isLoading = false,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        height: 64,
+        width: double.infinity,
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFFA259FF), Color(0xFFFF61D2)],
+            begin: Alignment.centerLeft,
+            end: Alignment.centerRight,
+          ),
+          borderRadius: BorderRadius.circular(20),
+          boxShadow: [
+            BoxShadow(
+              color: const Color(0xFFA259FF).withOpacity(0.3),
+              blurRadius: 16,
+              offset: const Offset(0, 8),
+            )
+          ],
+        ),
+        child: Center(
+          child: isLoading
+              ? const SizedBox(
+                  width: 24, 
+                  height: 24, 
+                  child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2)
+                )
+              : Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Icon(icon, color: Colors.white, size: 22),
+                    const SizedBox(width: 12),
+                    Text(
+                      text,
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontWeight: FontWeight.w700,
+                        fontSize: 16,
+                        fontFamily: 'SF Pro',
+                      ),
+                    ),
+                  ],
+                ),
+        ),
       ),
     );
   }
